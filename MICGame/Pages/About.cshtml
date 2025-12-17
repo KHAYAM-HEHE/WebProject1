@@ -1,0 +1,137 @@
+@page
+@model AboutModel
+@{
+    ViewData["Title"] = "About MIC Game";
+}
+
+<div class="container">
+    <h1>?? MIC: Man In Charge</h1>
+    <h3>A Turn-Based AI-Driven Geopolitical Simulation Game</h3>
+    
+    <hr />
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h4>?? Game Overview</h4>
+            <p>
+                <strong>MIC (Man-In-Charge)</strong> is a turn-based geopolitical simulation where you play as 
+                the head of the <strong>Covert Influence & Destabilization Directorate (CIDD)</strong>, 
+                a division of <strong>DART (Directorate of Asymmetric Reconnaissance and Tactical Operations)</strong> 
+                in the fictional country <strong>NotReal</strong>.
+            </p>
+            
+            <h4>?? Your Mission</h4>
+            <p>
+                Strategically destabilize the rival nation <strong>PureLand</strong>, which is fully controlled 
+                by an adaptive AI government agent. You must:
+            </p>
+            <ul>
+                <li>Reduce PureLand's stability below 30% OR increase insurgency above 70%</li>
+                <li>Pass a performance review every 5 years (score 60+ required)</li>
+                <li>Manage your budget and spy network effectively</li>
+                <li>Avoid detection by enemy counter-intelligence</li>
+            </ul>
+        </div>
+        
+        <div class="col-md-6">
+            <h4>?? The World</h4>
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h6>NotReal ??? (Your Country)</h6>
+                    <p class="mb-0 small">Your home nation. You serve its interests by destabilizing rivals.</p>
+                </div>
+            </div>
+            <div class="card mb-2 border-danger">
+                <div class="card-body">
+                    <h6>PureLand ?? (Target)</h6>
+                    <p class="mb-0 small">AI-controlled rival. Your primary target for destabilization.</p>
+                </div>
+            </div>
+            <div class="card mb-2 border-warning">
+                <div class="card-body">
+                    <h6>I-Walk ?? (Hostile Theocracy)</h6>
+                    <p class="mb-0 small">Hostile theocracy aligned with PureLand.</p>
+                </div>
+            </div>
+            <div class="card mb-2 border-success">
+                <div class="card-body">
+                    <h6>OutDia ?? (Strategic Ally)</h6>
+                    <p class="mb-0 small">Your strategic ally. Can be used for border operations.</p>
+                </div>
+            </div>
+            <div class="card mb-2 border-warning">
+                <div class="card-body">
+                    <h6>Chutki-Ban ?? (Unstable Theocracy)</h6>
+                    <p class="mb-0 small">Unstable theocracy. Can be bribed to shift alignment.</p>
+                </div>
+            </div>
+            <div class="card mb-2 border-danger">
+                <div class="card-body">
+                    <h6>Chi-Han ?? (Socialist Power)</h6>
+                    <p class="mb-0 small">Powerful socialist ally of PureLand.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <hr />
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h4>?? Covert Operations</h4>
+            <ul>
+                <li><strong>Fund Insurgency:</strong> Arm rebel groups</li>
+                <li><strong>Bribe Politicians:</strong> Corrupt government officials</li>
+                <li><strong>Trigger Border Skirmish:</strong> Create border tensions</li>
+                <li><strong>Engineer Crisis:</strong> Sabotage infrastructure</li>
+                <li><strong>Economic Sabotage:</strong> Disrupt trade and economy</li>
+                <li><strong>Expand/Reduce Spy Network:</strong> Manage operational capacity</li>
+                <li><strong>Bribe Chutki-Ban:</strong> Shift their alignment</li>
+                <li><strong>Sabotage Relations:</strong> Damage diplomatic ties</li>
+                <li><strong>Deep State Connections:</strong> Protect your position</li>
+            </ul>
+        </div>
+        
+        <div class="col-md-6">
+            <h4>?? AI Opponent</h4>
+            <p>PureLand's AI government:</p>
+            <ul>
+                <li>Assesses threats dynamically</li>
+                <li>Allocates resources to defense, economy, and welfare</li>
+                <li>Conducts counter-intelligence operations</li>
+                <li>Suppresses insurgencies</li>
+                <li>Adapts to your strategies</li>
+                <li>Faces its own 5-year reviews (failure causes instability)</li>
+            </ul>
+            
+            <h4>?? Performance Reviews</h4>
+            <p>Every 5 years, you face a review based on:</p>
+            <ul>
+                <li>Your reputation score</li>
+                <li>Success/failure ratio of operations</li>
+                <li>Detection by enemy intelligence</li>
+                <li>Impact on PureLand's stability</li>
+                <li>Deep state influence (protection)</li>
+            </ul>
+            <p><strong>Score 60+ to pass. Failure = Game Over!</strong></p>
+        </div>
+    </div>
+    
+    <hr />
+    
+    <div class="alert alert-info">
+        <h5>?? Strategy Tips</h5>
+        <ul class="mb-0">
+            <li><strong>Balance your budget:</strong> Operations are expensive, and spy network maintenance adds up</li>
+            <li><strong>Manage detection risk:</strong> Too many detected operations hurt your reputation</li>
+            <li><strong>Build deep state connections:</strong> They protect you during reviews</li>
+            <li><strong>Expand spy network early:</strong> More spies = higher success rates and lower costs</li>
+            <li><strong>Multi-pronged approach:</strong> Combine economic, political, and insurgency operations</li>
+            <li><strong>Watch the AI:</strong> It adapts and retaliates if you're detected too often</li>
+        </ul>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a asp-page="/Index" class="btn btn-primary btn-lg">?? Start Playing</a>
+    </div>
+</div>

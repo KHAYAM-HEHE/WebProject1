@@ -1,0 +1,127 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+/* MIC Game Specific Styles */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  padding: 10px 0;
+}
+
+.game-container {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.country-card {
+  transition: all 0.3s ease;
+}
+
+.country-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.action-card {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.action-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border-color: #007bff !important;
+}
+
+.action-card.expensive:hover {
+  border-color: #dc3545 !important;
+}
+
+.stat-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-fill {
+  transition: width 0.6s ease-in-out;
+}
+
+.alert-custom {
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.game-header {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  animation: slideDown 0.6s ease-out;
+}
+
+.resource-panel {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Pulse animation for critical stats */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.text-danger {
+  animation: pulse 2s infinite;
+}

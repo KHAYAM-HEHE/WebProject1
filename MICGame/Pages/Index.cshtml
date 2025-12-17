@@ -1,0 +1,811 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "MIC Game - Covert Operations";
+}
+
+<style>
+    /* ...existing styles... */
+    body {
+        background: #0a0e27;
+        color: #e0e0e0;
+    }
+
+    /* World Map Container */
+    .world-map-container {
+        background: linear-gradient(135deg, #1a1d3a 0%, #2c3e50 100%);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .world-map {
+        background: radial-gradient(ellipse at center, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
+        border: 2px solid rgba(52, 152, 219, 0.3);
+        border-radius: 15px;
+        padding: 30px;
+        position: relative;
+        min-height: 400px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .map-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(52, 152, 219, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(52, 152, 219, 0.05) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+    }
+
+    /* Country Markers on Map */
+    .country-marker {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: 15px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 1;
+    }
+
+    .country-marker:hover {
+        transform: scale(1.15) translateY(-10px);
+        z-index: 10;
+    }
+
+    .country-marker-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 3px solid;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent);
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .country-marker.hostile .country-marker-inner {
+        border-color: #e74c3c;
+        background-color: rgba(231, 76, 60, 0.2);
+        box-shadow: 0 8px 32px rgba(231, 76, 60, 0.4), 0 0 20px rgba(231, 76, 60, 0.3);
+    }
+
+    .country-marker.ally .country-marker-inner {
+        border-color: #27ae60;
+        background-color: rgba(39, 174, 96, 0.2);
+        box-shadow: 0 8px 32px rgba(39, 174, 96, 0.4), 0 0 20px rgba(39, 174, 96, 0.3);
+    }
+
+    .country-marker.neutral .country-marker-inner {
+        border-color: #f39c12;
+        background-color: rgba(243, 156, 18, 0.2);
+        box-shadow: 0 8px 32px rgba(243, 156, 18, 0.4), 0 0 20px rgba(243, 156, 18, 0.3);
+    }
+
+    .country-marker.target .country-marker-inner {
+        border-color: #c0392b;
+        background-color: rgba(192, 57, 43, 0.3);
+        box-shadow: 0 8px 32px rgba(192, 57, 43, 0.6), 0 0 30px rgba(192, 57, 43, 0.5);
+    }
+
+    .country-flag {
+        font-size: 3rem;
+        margin-bottom: 8px;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    .country-name {
+        font-weight: bold;
+        font-size: 0.85rem;
+        text-align: center;
+        color: #ecf0f1;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .country-status {
+        font-size: 0.7rem;
+        opacity: 0.9;
+        margin-top: 4px;
+    }
+
+    /* Enhanced Cards with Dark Theme */
+    .country-card {
+        border: 2px solid;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        background: rgba(26, 29, 58, 0.6);
+        color: #e0e0e0;
+    }
+
+    .country-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    }
+
+    .country-hostile { 
+        border-color: #e74c3c;
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(192, 57, 43, 0.15) 100%);
+    }
+
+    .country-ally { 
+        border-color: #27ae60;
+        background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, rgba(46, 204, 113, 0.15) 100%);
+    }
+
+    .country-neutral { 
+        border-color: #f39c12;
+        background: linear-gradient(135deg, rgba(243, 156, 18, 0.15) 0%, rgba(230, 126, 34, 0.15) 100%);
+    }
+
+    .stat-bar {
+        height: 28px;
+        background: rgba(0,0,0,0.4);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat-fill {
+        height: 100%;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 13px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        position: relative;
+    }
+
+    .stat-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+        border-radius: 14px 14px 0 0;
+    }
+
+    .stat-stability { background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #27ae60 100%); }
+    .stat-economy { background: linear-gradient(90deg, #e67e22 0%, #f39c12 50%, #3498db 100%); }
+    .stat-military { background: linear-gradient(90deg, #34495e 0%, #7f8c8d 100%); }
+    .stat-support { background: linear-gradient(90deg, #c0392b 0%, #e74c3c 50%, #3498db 100%); }
+    .stat-insurgency { background: linear-gradient(90deg, #8b0000 0%, #c0392b 50%, #e74c3c 100%); }
+    .stat-corruption { background: linear-gradient(90deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%); }
+
+    /* Cyberpunk Action Cards */
+    .action-card {
+        border: 2px solid rgba(52, 152, 219, 0.3);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 14px;
+        background: linear-gradient(135deg, rgba(26, 29, 58, 0.8) 0%, rgba(44, 62, 80, 0.6) 100%);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        position: relative;
+        overflow: hidden;
+        color: #e0e0e0;
+    }
+
+    .action-card:hover {
+        box-shadow: 0 8px 32px rgba(52, 152, 219, 0.4);
+        transform: translateY(-4px);
+        border-color: #3498db;
+    }
+
+    .action-card.expensive {
+        border-color: rgba(231, 76, 60, 0.5);
+        background: linear-gradient(135deg, rgba(192, 57, 43, 0.2) 0%, rgba(26, 29, 58, 0.8) 100%);
+    }
+
+    .action-card.selected {
+        border-color: #27ae60;
+        background: linear-gradient(135deg, rgba(39, 174, 96, 0.3) 0%, rgba(26, 29, 58, 0.8) 100%);
+        box-shadow: 0 8px 32px rgba(39, 174, 96, 0.5);
+    }
+
+    .alert-custom {
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        border: 2px solid;
+        backdrop-filter: blur(10px);
+    }
+
+    /* HUD-style Header */
+    .game-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+        color: #ecf0f1;
+        padding: 35px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(52, 152, 219, 0.3);
+    }
+
+    /* Holographic Resource Panel */
+    .resource-panel {
+        background: linear-gradient(135deg, rgba(52, 73, 94, 0.8) 0%, rgba(44, 62, 80, 0.8) 100%);
+        color: #ecf0f1;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        border: 2px solid rgba(52, 152, 219, 0.3);
+        position: relative;
+    }
+
+    .resource-box {
+        background: rgba(0,0,0,0.3);
+        border-radius: 12px;
+        padding: 18px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .resource-box:hover {
+        background: rgba(52, 152, 219, 0.15);
+        transform: translateY(-3px);
+        border-color: #3498db;
+        box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3);
+    }
+
+    .resource-value {
+        font-size: 2.2rem;
+        font-weight: bold;
+        text-shadow: 0 0 10px currentColor;
+        margin: 10px 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .resource-label {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 5px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .resource-detail {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        position: relative;
+        z-index: 1;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 12px;
+        border-bottom: 3px solid rgba(52, 152, 219, 0.3);
+        position: relative;
+    }
+
+    .section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(90deg, #3498db, transparent);
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-weight: bold;
+        color: #3498db;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    }
+
+    /* Tactical Buttons */
+    .btn-danger, .btn-primary {
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        border: 2px solid;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+        border-color: #e74c3c;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        border-color: #3498db;
+    }
+
+    .btn-danger:hover, .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(52, 152, 219, 0.5);
+    }
+
+    .badge {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .mission-box {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(41, 128, 185, 0.2) 100%);
+        border-left: 4px solid #3498db;
+        border-radius: 10px;
+        padding: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .turn-report {
+        background: linear-gradient(135deg, rgba(149, 165, 166, 0.2) 0%, rgba(127, 140, 141, 0.2) 100%);
+        border-left: 4px solid #95a5a6;
+        border-radius: 10px;
+        padding: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    /* Glowing Text Effects */
+    .glow-text {
+        text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    }
+
+    /* Text Colors for Dark Theme */
+    .text-muted {
+        color: #95a5a6 !important;
+    }
+
+    .fw-bold {
+        color: #ecf0f1 !important;
+    }
+
+    .bg-light {
+        background: rgba(0,0,0,0.3) !important;
+        border: 1px solid rgba(231, 76, 60, 0.3) !important;
+    }
+
+    /* Card for Game Over */
+    .card {
+        background: rgba(26, 29, 58, 0.8);
+        border: 2px solid rgba(52, 152, 219, 0.3);
+        color: #e0e0e0;
+    }
+    
+    /* NEW: Review Score Badge */
+    .review-score-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-top: 10px;
+    }
+    
+    .review-passing {
+        background: linear-gradient(135deg, rgba(39, 174, 96, 0.3) 0%, rgba(46, 204, 113, 0.3) 100%);
+        border: 2px solid #27ae60;
+        color: #27ae60;
+    }
+    
+    .review-failing {
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.3) 0%, rgba(192, 57, 43, 0.3) 100%);
+        border: 2px solid #e74c3c;
+        color: #e74c3c;
+    }
+    
+    /* NEW: Event notification style */
+    .alert-info {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(41, 128, 185, 0.2) 100%);
+        border: 2px solid #3498db;
+        color: #3498db;
+    }
+</style>
+
+@if (Model.GameState.GameOver)
+{
+    <div class="alert @(Model.GameState.PlayerWon ? "alert-success" : "alert-danger") alert-custom">
+        <h2 class="text-center glow-text">@(Model.GameState.PlayerWon ? "🎉 VICTORY!" : "💀 GAME OVER")</h2>
+        <p class="text-center fs-5">@Model.GameState.GameOverReason</p>
+        <div class="text-center mt-4">
+            <form method="post">
+                <button type="submit" asp-page-handler="NewGame" class="btn btn-primary btn-lg">
+                    🔄 Start New Game
+                </button>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="game-header">
+    <div style="position: relative; z-index: 1;">
+        <h1 class="display-4 mb-2 glow-text">🎯 MIC: Man In Charge</h1>
+        <p class="fs-5 mb-1">Covert Influence & Destabilization Directorate (CIDD)</p>
+        <small class="opacity-75">Directorate of Asymmetric Reconnaissance and Tactical Operations (DART)</small>
+    </div>
+</div>
+
+@* NEW: Review Results *@
+@if (Model.ShowReviewResults)
+{
+    <div class="alert alert-@(TempData["ReviewPassed"] as bool? ?? false ? "success" : "danger") alert-custom">
+        <h4 class="text-center">📊 5-YEAR PERFORMANCE REVIEW</h4>
+        <h2 class="text-center glow-text">Score: @Model.ReviewScore / 100</h2>
+        <p class="text-center fs-5">
+            @if ((TempData["ReviewPassed"] as bool?) ?? false)
+            {
+                <span>✅ PASSED - You have been approved for another 5-year term!</span>
+            }
+            else
+            {
+                <span>❌ FAILED - You have been recalled from duty.</span>
+            }
+        </p>
+    </div>
+}
+
+@* NEW: Random Events *@
+@if (Model.RandomEvent != null)
+{
+    <div class="alert alert-info alert-custom">
+        <h5>🎲 RANDOM EVENT:</h5>
+        <p class="mb-0 fs-6">@Model.RandomEvent</p>
+    </div>
+}
+
+@* NEW: Year End Message *@
+@if (Model.YearEndMessage != null)
+{
+    <div class="alert alert-info alert-custom">
+        <p class="mb-0 fs-6">📅 @Model.YearEndMessage</p>
+    </div>
+}
+
+@if (Model.LastActionResult != null)
+{
+    <div class="alert @(Model.LastActionResult.Success ? "alert-success" : "alert-warning") alert-custom">
+        <h5>@(Model.LastActionResult.Success ? "✓ Operation Report:" : "⚠ Operation Report:")</h5>
+        <p class="mb-0 fs-6">@Model.LastActionResult.Message</p>
+        @if (Model.LastActionResult.Detected)
+        {
+            <p class="mb-0 mt-2 text-danger fw-bold fs-5 glow-text">🚨 DETECTED BY ENEMY INTELLIGENCE!</p>
+        }
+    </div>
+}
+
+@if (!Model.GameState.GameOver)
+{
+    <div class="resource-panel">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="resource-box">
+                    <div class="resource-label">💰 Budget</div>
+                    <div class="resource-value" style="color: #27ae60;">$@Model.GameState.PlayerBudget.ToString("N0")</div>
+                    <div class="resource-detail">Annual: $@Model.GameState.AnnualBudget.ToString("N0")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="resource-box">
+                    <div class="resource-label">🕵️ Spy Network</div>
+                    <div class="resource-value" style="color: #3498db;">@Model.GameState.SpyNetworkSize <small class="fs-6">agents</small></div>
+                    <div class="resource-detail">Maintenance: $@Model.GameState.SpyNetworkMaintenanceCost.ToString("N0")/year</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="resource-box">
+                    <div class="resource-label">📊 Performance</div>
+                    <div class="resource-value" style="color: #f39c12;">@Model.GameState.PlayerReputation<small class="fs-5">/100</small></div>
+                    <div class="resource-detail">✓ @Model.GameState.SuccessfulOperations | ✗ @Model.GameState.FailedOperations</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="resource-box">
+                    <div class="resource-label">⏰ Next Review</div>
+                    <div class="resource-value" style="color: @(Model.GameState.YearsUntilReview <= 1 ? "#e74c3c" : "#9b59b6");">@Model.GameState.YearsUntilReview <small class="fs-6">years</small></div>
+                    <div class="resource-detail">Year @Model.GameState.CurrentYear</div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <small class="opacity-75">
+                    🛡️ Deep State Influence: @Model.GameState.DeepStateInfluence/100 | 
+                    🚨 Detected Operations: @Model.GameState.DetectedOperations
+                </small>
+                @* NEW: Show current review score *@
+                <div class="review-score-badge @(Model.CurrentReviewScore >= 60 ? "review-passing" : "review-failing")">
+                    📊 Review Score: @Model.CurrentReviewScore/100 (@(Model.CurrentReviewScore >= 60 ? "PASSING" : "FAILING"))
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WORLD MAP -->
+    <div class="world-map-container">
+        <div class="section-header">
+            <h3>🗺️ Geopolitical Theater</h3>
+        </div>
+        <div class="world-map">
+            <div class="map-grid"></div>
+            
+            @foreach (var country in Model.GameState.Countries.Values)
+            {
+                var markerClass = country.Type == CountryType.PureLand ? "target" :
+                                 country.Alignment == CountryAlignment.Hostile || 
+                                 country.Alignment == CountryAlignment.AllyOfPureLand ? "hostile" :
+                                 country.Alignment == CountryAlignment.AllyOfNotReal ? "ally" : "neutral";
+                
+                var emoji = country.Type switch
+                {
+                    CountryType.NotReal => "🏛️",
+                    CountryType.PureLand => "🎯",
+                    CountryType.IWalk => "🕌",
+                    CountryType.OutDia => "🤝",
+                    CountryType.ChutkiBan => "💰",
+                    CountryType.ChiHan => "🚩",
+                    _ => "🌐"
+                };
+                
+                <div class="country-marker @markerClass" title="@country.Name">
+                    <div class="country-marker-inner">
+                        <div class="country-flag">@emoji</div>
+                        <div class="country-name">@country.Name</div>
+                        <div class="country-status">
+                            @if (country.Type == CountryType.PureLand)
+                            {
+                                <span style="color: #e74c3c;">S:@country.Stability%</span>
+                            }
+                            else if (country.Type == CountryType.NotReal)
+                            {
+                                <span style="color: #3498db;">HOME</span>
+                            }
+                            else
+                            {
+                                <span>@country.Alignment.ToString().Replace("AllyOf", "")</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="section-header">
+                <h3>📊 Intelligence Reports</h3>
+            </div>
+            
+            @foreach (var country in Model.GameState.Countries.Values.OrderBy(c => c.Type))
+            {
+                var cssClass = country.Alignment switch
+                {
+                    CountryAlignment.Hostile or CountryAlignment.AllyOfPureLand => "country-hostile",
+                    CountryAlignment.AllyOfNotReal => "country-ally",
+                    _ => "country-neutral"
+                };
+                
+                <div class="country-card @cssClass">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">
+                            @country.Name
+                        </h5>
+                        <div>
+                            @if (country.Type == CountryType.PureLand) 
+                            { 
+                                <span class="badge bg-danger">🎯 PRIMARY TARGET</span> 
+                            }
+                            @if (country.Type == CountryType.NotReal) 
+                            { 
+                                <span class="badge bg-primary">🏛️ HOME BASE</span> 
+                            }
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mb-3">@country.Alignment</small>
+                    
+                    <div>
+                        <small class="fw-bold">Stability: @country.Stability%</small>
+                        <div class="stat-bar">
+                            <div class="stat-fill stat-stability" style="width: @country.Stability%">
+                                @if (country.Stability > 15) { <span>@country.Stability%</span> }
+                            </div>
+                        </div>
+                        
+                        <small class="fw-bold">Economy: @country.Economy%</small>
+                        <div class="stat-bar">
+                            <div class="stat-fill stat-economy" style="width: @country.Economy%">
+                                @if (country.Economy > 15) { <span>@country.Economy%</span> }
+                            </div>
+                        </div>
+                        
+                        @if (country.Type == CountryType.PureLand)
+                        {
+                            <small class="fw-bold">Insurgency: @country.InsurgencyLevel%</small>
+                            <div class="stat-bar">
+                                <div class="stat-fill stat-insurgency" style="width: @country.InsurgencyLevel%">
+                                    @if (country.InsurgencyLevel > 15) { <span>@country.InsurgencyLevel%</span> }
+                                </div>
+                            </div>
+                            
+                            <small class="fw-bold">Corruption: @country.CorruptionLevel%</small>
+                            <div class="stat-bar">
+                                <div class="stat-fill stat-corruption" style="width: @country.CorruptionLevel%">
+                                    @if (country.CorruptionLevel > 15) { <span>@country.CorruptionLevel%</span> }
+                                </div>
+                            </div>
+                            
+                            <small class="fw-bold">Public Support: @country.PublicSupport%</small>
+                            <div class="stat-bar">
+                                <div class="stat-fill stat-support" style="width: @country.PublicSupport%">
+                                    @if (country.PublicSupport > 15) { <span>@country.PublicSupport%</span> }
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 p-2 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(231, 76, 60, 0.3);">
+                                <small class="d-block">
+                                    <strong>🛡️ AI Defense Systems:</strong>
+                                </small>
+                                <small class="d-block mt-1">
+                                    Counter-Intel: @country.CounterIntelligenceLevel% | 
+                                    Internal Security: @country.InternalSecurity% | 
+                                    Border Defense: @country.BorderDefense%
+                                </small>
+                            </div>
+                        }
+                        
+                        @if (country.Type == CountryType.ChutkiBan)
+                        {
+                            <small class="fw-bold">Bribe Level: @country.BribeLevel%</small>
+                            <div class="stat-bar">
+                                <div class="stat-fill stat-corruption" style="width: @country.BribeLevel%">
+                                    @if (country.BribeLevel > 15) { <span>@country.BribeLevel%</span> }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="section-header">
+                <h3>⚔️ Tactical Operations</h3>
+            </div>
+            
+            <form method="post">
+                @for (int i = 0; i < Model.AvailableActions.Count; i++)
+                {
+                    var action = Model.AvailableActions[i];
+                    var canAfford = Model.GameState.PlayerBudget >= action.Cost;
+                    var cardClass = !canAfford ? "action-card expensive" : "action-card";
+                    
+                    <div class="@cardClass" onclick="document.getElementById('action_@i').checked = true; this.classList.add('selected'); document.querySelectorAll('.action-card').forEach(c => { if(c !== this) c.classList.remove('selected'); });" style="@(canAfford ? "" : "opacity: 0.5;")">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="actionIndex" id="action_@i" value="@i" @(canAfford ? "" : "disabled")>
+                            <label class="form-check-label w-100" for="action_@i">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong class="fs-6">@action.Name</strong>
+                                    <span class="badge bg-@(action.TargetCountry == CountryType.PureLand ? "danger" : "secondary")">
+                                        @action.TargetCountry
+                                    </span>
+                                </div>
+                                <small class="d-block mb-2 text-muted">@action.Description</small>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                    <small class="text-muted">💰 $@action.Cost.ToString("N0")</small>
+                                    <small class="text-muted">✓ ~@action.BaseSuccessRate%</small>
+                                    <small class="text-muted">🚨 ~@action.DetectionRisk%</small>
+                                </div>
+                                @if (!canAfford)
+                                {
+                                    <div class="mt-2">
+                                        <small class="text-danger fw-bold">⚠ INSUFFICIENT FUNDS</small>
+                                    </div>
+                                }
+                            </label>
+                        </div>
+                    </div>
+                }
+                
+                <div class="d-grid gap-3 mt-4">
+                    <button type="submit" asp-page-handler="ExecuteAction" class="btn btn-danger btn-lg">
+                        🎯 Execute Operation
+                    </button>
+                    <button type="submit" asp-page-handler="EndTurn" class="btn btn-primary btn-lg">
+                        ⏭️ End Year & Review
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mission-box mt-4">
+                <strong class="d-block mb-2">📋 Mission Briefing:</strong>
+                <ul class="mb-0 small">
+                    <li><strong>PRIMARY OBJECTIVE:</strong> Destabilize PureLand (Stability &lt; 30 or Insurgency &gt; 70)</li>
+                    <li><strong>SURVIVAL:</strong> Pass 5-year performance reviews (need 60+ score)</li>
+                    <li><strong>ECONOMY:</strong> Manage budget and spy network effectively</li>
+                    <li><strong>STEALTH:</strong> Avoid detection by enemy intelligence</li>
+                </ul>
+            </div>
+            
+            @if (Model.GameState.TurnHistory.Any())
+            {
+                var lastTurn = Model.GameState.TurnHistory.Last();
+                <div class="turn-report mt-3">
+                    <strong class="d-block mb-2">📡 SIGINT Report (Year @lastTurn.Year):</strong>
+                    @if (lastTurn.AIActions.Any())
+                    {
+                        <ul class="mb-0 small">
+                            @foreach (var aiAction in lastTurn.AIActions)
+                            {
+                                <li>@aiAction</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <small class="text-muted">No enemy activity detected.</small>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <h3 class="mb-4 glow-text">📊 Mission Debrief</h3>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <p class="fs-5"><strong>Total Operations:</strong> @Model.GameState.SuccessfulOperations successful, @Model.GameState.FailedOperations failed</p>
+                        <p class="fs-5"><strong>Final Reputation:</strong> @Model.GameState.PlayerReputation/100</p>
+                        <p class="fs-5"><strong>Final Review Score:</strong> @Model.CurrentReviewScore/100</p>
+                        <p class="fs-5"><strong>Years in Service:</strong> @Model.GameState.CurrentYear</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
